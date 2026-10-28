@@ -1,0 +1,151 @@
+{
+  "entities": {
+    "userProfile": {
+      "title": "UserProfile",
+      "description": "Stores intern or mentor profile information and current progress",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "maxLength": 128 },
+        "fullName": { "type": "string", "maxLength": 100 },
+        "email": { "type": "string", "maxLength": 150 },
+        "role": { "type": "string", "enum": ["mentor", "intern"] },
+        "completedCount": { "type": "number" },
+        "currentWeek": { "type": "number" },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["userId", "fullName", "email", "role"]
+    },
+    "task": {
+      "title": "Task",
+      "description": "Weekly curriculum task details, deliverables, and rubric criteria",
+      "type": "object",
+      "properties": {
+        "weekNumber": { "type": "number" },
+        "monthNumber": { "type": "number" },
+        "skill": { "type": "string", "maxLength": 80 },
+        "title": { "type": "string", "maxLength": 150 },
+        "description": { "type": "string", "maxLength": 2000 },
+        "deliverableRequirements": { "type": "string", "maxLength": 2000 },
+        "evaluationRubric": { "type": "string", "maxLength": 2000 },
+        "isFinalProject": { "type": "boolean" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["weekNumber", "monthNumber", "skill", "title", "description"]
+    },
+    "submission": {
+      "title": "Submission",
+      "description": "Intern submission record with iterative versions, evaluation status, and AI feedback",
+      "type": "object",
+      "properties": {
+        "taskId": { "type": "string", "maxLength": 64 },
+        "taskWeek": { "type": "number" },
+        "internId": { "type": "string", "maxLength": 128 },
+        "internName": { "type": "string", "maxLength": 100 },
+        "internEmail": { "type": "string", "maxLength": 150 },
+        "iterationNumber": { "type": "number" },
+        "submissionText": { "type": "string", "maxLength": 10000 },
+        "fileNames": { "type": "string", "maxLength": 255 },
+        "deliverableUrl": { "type": "string", "maxLength": 500 },
+        "status": { "type": "string", "enum": ["submitted", "evaluating", "needs_revision", "approved"] },
+        "score": { "type": "number" },
+        "strengths": { "type": "string", "maxLength": 2000 },
+        "missingGaps": { "type": "string", "maxLength": 2000 },
+        "improvements": { "type": "string", "maxLength": 3000 },
+        "mentorNotes": { "type": "string", "maxLength": 2000 },
+        "submittedAt": { "type": "string" },
+        "reviewedAt": { "type": "string" }
+      },
+      "required": ["taskId", "taskWeek", "internId", "internName", "internEmail", "iterationNumber", "status"]
+    },
+    "reviewSchedule": {
+      "title": "ReviewSchedule",
+      "description": "Scheduled review sessions and presentation calls between mentor and intern",
+      "type": "object",
+      "properties": {
+        "internId": { "type": "string", "maxLength": 128 },
+        "internName": { "type": "string", "maxLength": 100 },
+        "internEmail": { "type": "string", "maxLength": 150 },
+        "taskId": { "type": "string", "maxLength": 64 },
+        "taskTitle": { "type": "string", "maxLength": 150 },
+        "scheduledTime": { "type": "string", "maxLength": 80 },
+        "meetingLink": { "type": "string", "maxLength": 300 },
+        "status": { "type": "string", "enum": ["scheduled", "completed", "cancelled"] },
+        "notes": { "type": "string", "maxLength": 1000 },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["internId", "internEmail", "scheduledTime", "meetingLink", "status"]
+    },
+    "notification": {
+      "title": "Notification",
+      "description": "Email & in-app alerts sent to interns or mentors regarding reviews, submissions, and feedback",
+      "type": "object",
+      "properties": {
+        "recipientId": { "type": "string", "maxLength": 128 },
+        "recipientEmail": { "type": "string", "maxLength": 150 },
+        "type": { "type": "string", "enum": ["review_scheduled", "feedback_ready", "task_assigned", "task_approved"] },
+        "subject": { "type": "string", "maxLength": 200 },
+        "body": { "type": "string", "maxLength": 5000 },
+        "sentAt": { "type": "string" },
+        "isRead": { "type": "boolean" }
+      },
+      "required": ["recipientId", "recipientEmail", "type", "subject", "body"]
+    },
+    "chatMessage": {
+      "title": "ChatMessage",
+      "description": "Saved conversation messages between intern and AI mentor",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "maxLength": 128 },
+        "role": { "type": "string", "enum": ["user", "assistant"] },
+        "content": { "type": "string", "maxLength": 5000 },
+        "taskWeek": { "type": "number" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["userId", "role", "content"]
+    },
+    "feedback": {
+      "title": "Feedback",
+      "description": "Intern 1-5 star ratings and reviews for learning experience",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "maxLength": 128 },
+        "userName": { "type": "string", "maxLength": 100 },
+        "rating": { "type": "number" },
+        "comment": { "type": "string", "maxLength": 1000 },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["userId", "rating"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "userProfile",
+      "description": "Collection of user profiles for interns and mentors"
+    },
+    "/tasks/{taskId}": {
+      "schema": "task",
+      "description": "Curriculum tasks with deliverables, skills, and rubrics"
+    },
+    "/submissions/{submissionId}": {
+      "schema": "submission",
+      "description": "Submissions made by interns with AI evaluation and revision cycles"
+    },
+    "/review_schedules/{scheduleId}": {
+      "schema": "reviewSchedule",
+      "description": "Presentation and review dates/times with meeting links"
+    },
+    "/notifications/{notificationId}": {
+      "schema": "notification",
+      "description": "System and email dispatch notifications"
+    },
+    "/chat_messages/{messageId}": {
+      "schema": "chatMessage",
+      "description": "Task-guided AI mentor chat history"
+    },
+    "/feedback/{feedbackId}": {
+      "schema": "feedback",
+      "description": "Platform ratings and experience reviews"
+    }
+  }
+}

@@ -1,0 +1,95 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Default deny all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isMentor() {
+      return isSignedIn() && (
+        request.auth.token.email == 'mohammedhrasin@gmail.com' ||
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'mentor'
+      );
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128;
+    }
+
+    // Connection testing
+    match /test/{docId} {
+      allow read, write: if isSignedIn();
+    }
+
+    // Users collection
+    match /users/{userId} {
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      allow create: if isSignedIn() && (isOwner(userId) || isMentor());
+      allow update: if isSignedIn() && (isOwner(userId) || isMentor());
+      allow delete: if isMentor();
+    }
+
+    // Curriculum Tasks
+    match /tasks/{taskId} {
+      allow read: if isSignedIn();
+      allow create, update, delete: if isMentor();
+    }
+
+    // Submissions
+    match /submissions/{submissionId} {
+      allow read: if isSignedIn() && (isMentor() || resource.data.internId == request.auth.uid);
+      allow create: if isSignedIn() && (
+        request.resource.data.internId == request.auth.uid || isMentor()
+      );
+      allow update: if isSignedIn() && (
+        isMentor() ||
+        (resource.data.internId == request.auth.uid && request.resource.data.internId == request.auth.uid)
+      );
+      allow delete: if isMentor();
+    }
+
+    // Review Schedules
+    match /review_schedules/{scheduleId} {
+      allow read: if isSignedIn() && (isMentor() || resource.data.internId == request.auth.uid);
+      allow create: if isSignedIn() && (isMentor() || request.resource.data.internId == request.auth.uid);
+      allow update, delete: if isMentor();
+    }
+
+    // Notifications
+    match /notifications/{notificationId} {
+      allow read: if isSignedIn() && (isMentor() || resource.data.recipientId == request.auth.uid);
+      allow create: if isSignedIn();
+      allow update: if isSignedIn() && (isMentor() || resource.data.recipientId == request.auth.uid);
+      allow delete: if isMentor();
+    }
+
+    // Chat Messages
+    match /chat_messages/{messageId} {
+      allow read: if isSignedIn() && (isMentor() || resource.data.userId == request.auth.uid);
+      allow create: if isSignedIn() && (
+        request.resource.data.userId == request.auth.uid || isMentor()
+      );
+      allow update, delete: if isMentor() || (isSignedIn() && resource.data.userId == request.auth.uid);
+    }
+
+    // Feedback
+    match /feedback/{feedbackId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isMentor();
+    }
+  }
+}

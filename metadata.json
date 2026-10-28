@@ -1,0 +1,7 @@
+{
+  "name": "AI Internship Task Monitoring & Evaluation System",
+  "description": "Automated internship task management, voice explanations, submission review with Gemini AI, feedback generation, and progress tracking.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
+
